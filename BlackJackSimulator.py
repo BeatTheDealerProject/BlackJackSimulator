@@ -5,6 +5,8 @@ import random
 基本となるカードを定義するクラス
 rank:カードのランク, suit:カードのスート, value:カードから得る数
 '''
+
+
 # gitテスト用変更点 12345
 
 
@@ -66,10 +68,12 @@ class Deck:
             shuffleNum -= 1
         print("deck shuffled")
 
+
 '''
-ゲーム参加者を表すクラス
+ゲーム参加者を表すスーパークラス
 プレイヤーとディーラーとで共通のアクションを定義していく
 '''
+
 
 class GamePlayer:
 
@@ -83,8 +87,7 @@ class GamePlayer:
         self.naturalbj = False
         self.normalbj = False
 
-
-    #　子オブジェクトから呼び出せる初期化関数
+    # 　子オブジェクトから呼び出せる初期化関数
     def initialize(self):
         self.cards = []
         self.total = 0
@@ -117,6 +120,8 @@ class GamePlayer:
                     self.burst = True
             else:
                 self.burst = True
+
+
 '''
 プレイヤーを定義するクラス
 ヒット、スタンドなどのプレイヤーが選択する処理は個々に記述する
@@ -147,6 +152,10 @@ class Player(GamePlayer):
     # プレイヤ－側のダブルダウンの処理
     def doubledown(self, dealer):
         self.hit(dealer)
+
+    # プレイヤー側のスプリットの処理
+    def split(self):
+        pass
 
     # 自身の手札を表示するUI
     def showhands(self):
@@ -202,6 +211,7 @@ class Dealer(GamePlayer):
             print(x.suit, x.rank, ",", end="")
         print("total: ", self.total)
 
+
 '''
 ゲーム全体を管理するクラス
 主にゲームの勝敗に関連する事柄を管理するのでデッキ自体の操作は個々では行わない
@@ -234,16 +244,16 @@ class GameManager:
                 print(player.name, "lose (player<dealer)")
                 self.checkdeal = False
             elif (player.total == self.dealer.total and self.checkdeal):
-                if(player.naturalbj and self.dealer.naturalbj and self.checkdeal):
+                if (player.naturalbj and self.dealer.naturalbj and self.checkdeal):
                     print(player.name, "draw (natural vs natural)")
                     self.checkdeal = False
-                elif(player.naturalbj and self.dealer.normalbj and self.checkdeal):
+                elif (player.naturalbj and self.dealer.normalbj and self.checkdeal):
                     print(player.name, "win (natural vs normal)")
                     self.checkdeal = False
-                elif(player.normalbj and self.dealer.naturalbj and self.checkdeal):
+                elif (player.normalbj and self.dealer.naturalbj and self.checkdeal):
                     print(player.name, "lose (normal vs natural)")
                     self.checkdeal = False
-                elif(player.normalbj and self.dealer.normalbj and self.checkdeal):
+                elif (player.normalbj and self.dealer.normalbj and self.checkdeal):
                     print(player.name, "draw (normal vs normal)")
                     self.checkdeal = False
                 else:
@@ -253,8 +263,8 @@ class GameManager:
     # ナチュラルブラックジャックとノーマルブラックジャックを判別する関数
     # 入力にプレイヤー個人またはディーラ－個人を与える
     def checkblackjack(self, player):
-        if(player.total == 21):
-            if(len(player.cards)==2):
+        if (player.total == 21):
+            if (len(player.cards) == 2):
                 player.naturalbj = True
             else:
                 player.normalbj = True
@@ -269,19 +279,19 @@ class GameManager:
 
 def main():
     p1 = Player("player1")
-#    p2 = Player("player2")
-#    players = [p1, p2]
+    #    p2 = Player("player2")
+    #    players = [p1, p2]
     players = [p1]
     dealer = Dealer(1)
     message = "wellcome!"
-    cutcard = len(dealer.deck.Cards)/2
+    cutcard = len(dealer.deck.Cards) / 2
 
     print("wellcome!")
 
     while True:
         # ゲームを始める前にデッキの中からカットカードが出てきているかを確認し、
         # 出てきていれば、デッキをシャッフルする
-        if(dealer.deck.current > cutcard):
+        if (dealer.deck.current > cutcard):
             dealer.deck.shuffle(dealer.shufflenum)
 
         # GameManagerの初期化
@@ -302,7 +312,6 @@ def main():
                 j += 1
             print(" total -", x.total)
         print("")
-
 
         # 各プレイヤーに対して選択肢を提示する
         for player in players:
@@ -333,17 +342,18 @@ def main():
         gamemanager.judge()
         print("continue? y/n")
         hoge = input()
-        if(hoge == "n"):
+        if (hoge == "n"):
             break
         else:
             pass
+
 
 # デッキ確認用関数
 def showdeck():
     dealer = Dealer(2)
     i = 0
     for x in dealer.deck.Cards:
-        print(i+1, x.suit, x.rank)
+        print(i + 1, x.suit, x.rank)
         i += 1
 
 
