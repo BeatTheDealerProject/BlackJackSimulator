@@ -66,7 +66,7 @@ class Deck:
             self.Cards[cut1] = self.Cards[cut2]
             self.Cards[cut2] = temp
             shuffleNum -= 1
-        print("deck shuffled")
+        print("*** deck shuffled ***")
 
 
 '''
@@ -147,7 +147,8 @@ class Player(GamePlayer):
 
     # プレイヤー側のスタンドの処理
     def stand(self):
-        self.showhands()
+        # self.showhands()
+        pass
 
     # プレイヤ－側のダブルダウンの処理
     def doubledown(self, dealer):
@@ -159,11 +160,11 @@ class Player(GamePlayer):
 
     # 自身の手札を表示するUI
     def showhands(self):
-        print("---", self.name, "hands: ", end="")
-        for x in self.cards:
-            print(x.suit, x.rank, ",", end="")
         self.totalvalue()
-        print("total: ", self.total, "---\n")
+        print("---hands---")
+        for x in self.cards:
+            print('/', x.suit, x.rank)
+        print("---total---: ", self.total, "\n")
 
 
 '''
@@ -177,7 +178,8 @@ class Dealer(GamePlayer):
     # ディーラーの初期化
     def __init__(self, deckNum):
         self.deck = Deck(deckNum)
-        self.shufflenum = 200
+        # ディーラーがシャッフルする回数。今回は10000回シャッフルする。
+        self.shufflenum = 10000
         self.deck.shuffle(deckNum * self.shufflenum)
         super().__init__()
 
@@ -213,8 +215,8 @@ class Dealer(GamePlayer):
 
 
 '''
-ゲーム全体を管理するクラス
-主にゲームの勝敗に関連する事柄を管理するのでデッキ自体の操作は個々では行わない
+ゲームを管理するクラス
+主にゲームの勝敗に関連する事柄を管理するのでデッキ自体の操作などは行わない
 '''
 
 
@@ -230,35 +232,34 @@ class GameManager:
             self.checkblackjack(x)
         self.checkblackjack(self.dealer)
         for player in self.players:
-            self.checkdeal = True
-            if (player.burst == True and self.checkdeal):
+            if player.burst == True:
                 print(player.name, "lose (player burst)")
-                self.checkdeal = False
-            elif (player.burst == False and self.dealer.burst == True and self.checkdeal):
+                return "lose"
+            elif player.burst == False and self.dealer.burst == True:
                 print(player.name, "win (dealer burst)")
-                self.checkdeal = False
-            elif (player.total > self.dealer.total and self.checkdeal):
+                return "win"
+            elif player.total > self.dealer.total:
                 print(player.name, "win (player>dealer)")
-                self.checkdeal = False
-            elif (player.total < self.dealer.total and self.checkdeal):
+                return "win"
+            elif player.total < self.dealer.total:
                 print(player.name, "lose (player<dealer)")
-                self.checkdeal = False
-            elif (player.total == self.dealer.total and self.checkdeal):
-                if (player.naturalbj and self.dealer.naturalbj and self.checkdeal):
+                return "lose"
+            elif player.total == self.dealer.total:
+                if player.naturalbj and self.dealer.naturalbj:
                     print(player.name, "draw (natural vs natural)")
-                    self.checkdeal = False
-                elif (player.naturalbj and self.dealer.normalbj and self.checkdeal):
+                    return "draw"
+                elif player.naturalbj and self.dealer.normalbj:
                     print(player.name, "win (natural vs normal)")
-                    self.checkdeal = False
-                elif (player.normalbj and self.dealer.naturalbj and self.checkdeal):
+                    return "win"
+                elif player.normalbj and self.dealer.naturalbj:
                     print(player.name, "lose (normal vs natural)")
-                    self.checkdeal = False
-                elif (player.normalbj and self.dealer.normalbj and self.checkdeal):
+                    return "lose"
+                elif player.normalbj and self.dealer.normalbj:
                     print(player.name, "draw (normal vs normal)")
-                    self.checkdeal = False
+                    return "draw"
                 else:
                     print(player.name, " draw (player==dealer)")
-                    self.checkdeal = False
+                    return "draw"
 
     # ナチュラルブラックジャックとノーマルブラックジャックを判別する関数
     # 入力にプレイヤー個人またはディーラ－個人を与える
@@ -278,19 +279,71 @@ class GameManager:
 
 
 def main():
+    # プレイヤーを作成
     p1 = Player("player1")
     #    p2 = Player("player2")
     #    players = [p1, p2]
+
+    # ゲームに参加するプレイヤーを表現
     players = [p1]
+
+    # ディーラーの作成
+    # 引数はゲームに使用するデッキの数を表現
     dealer = Dealer(1)
-    message = "wellcome!"
+
+    # カットカードを表現
+    # 今回はデッキの半分の位置にカットカードを固定している
     cutcard = len(dealer.deck.Cards) / 2
+
+    # txtデータとして出力するものをstring形式で初期化
+    outtxt = ""
+
+    # ゲーム全体のループ回数
+    # hogeは現在のループ回数を表現するために作成したものなので消してしまっても特に影響はない
+    loopnum = 50
+    hoge = loopnum + 1
+
+    # 参照するベーシックストラテジーの配列を定義
+    basicstrategy = [['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],
+                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],
+                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],
+                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],
+                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],
+                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],
+                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],
+                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],
+                     ['h', 'h', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],
+                     ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],
+                     ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],
+                     ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],
+                     ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],
+                     ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],
+                     ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],
+                     ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],
+                     ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],
+                     ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],
+                     # ここからはAがある場合のストラテジー表
+                     ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],
+                     ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],
+                     ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],
+                     ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],
+                     ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],
+                     ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'],
+                     ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+                     ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+                     ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+                     ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H']
+                     ]
 
     print("wellcome!")
 
+    # メインループ
     while True:
-        # ゲームを始める前にデッキの中からカットカードが出てきているかを確認し、
-        # 出てきていれば、デッキをシャッフルする
+        # UI用のプリント文
+        print('--------------------------------------------------------------\n')
+        print('---' + str(hoge - loopnum) + '---')
+
+        # ゲームを始める前にデッキの中からカットカードが出てきているかを確認し、出てきていれば、デッキをシャッフルする
         if (dealer.deck.current > cutcard):
             dealer.deck.shuffle(dealer.shufflenum)
 
@@ -300,36 +353,60 @@ def main():
         # ディーラーが各プレイヤー（自身含む）に初期カードを配る
         dealer.firstdeal(players)
 
-        # ディーラーのアップカードとプレイヤーのアップカードを表示する
+        # ディーラーのアップカードとプレイヤーのアップカードを表示するUI部分
         for player in players:
             player.totalvalue()
         print("dealer up card :", dealer.cards[0].suit, dealer.cards[0].rank)
+        outtxt += "dealer---" + dealer.cards[0].suit + dealer.cards[0].rank + "\n"
         for x in players:
-            print("---", x.name, "up card --- ", end="")
+            print(x.name, "up card ", end="")
+            outtxt += x.name + "---"
             j = 0
             while j < 2:
                 print("/", x.cards[j].suit, x.cards[j].rank, end=" ")
+                outtxt += x.cards[j].suit + x.cards[j].rank + ","
                 j += 1
+            outtxt += "\n"
             print(" total -", x.total)
         print("")
 
         # 各プレイヤーに対して選択肢を提示する
         for player in players:
             while 1:
+                '''
+                手動で操作する際の処理
                 print(player.name, "turn")
                 for card in player.cards:
                     print("/", card.suit, card.rank)
                 print("total - ", player.total)
                 print("press: HIT = H, STAND = S, DOUBLEDOWN = D")
                 usermessage = input()
-                if usermessage == "H" or usermessage == "h":
+                '''
+
+                # プレイヤーの選択はベーシックストラテジーに沿って行われるものとする
+                # プレイヤーの手札にA(11)が残っている場合
+                if player.acetotal - player.usedace > 0:
+                    usermessage = basicstrategy[player.cards[0].value + player.cards[1].value + 5][dealer.cards[0].value - 2]
+                # プレイヤーの手札にA(11)が残っていない場合
+                else:
+                    usermessage = basicstrategy[player.total - 4][dealer.cards[0].value - 2]
+
+                # プレイヤーの選択による行動の分岐を記述
+                # プレイヤーがヒットを選択した場合
+                if usermessage == 'H' or usermessage == 'h':
+                    print("hit\n")
+                    outtxt += "hit\n"
                     player.hit(dealer)
                     if (player.burst == True):
                         break
-                elif usermessage == "S" or usermessage == "s":
+                # プレイヤーがスタンドを選択した場合
+                elif usermessage == 'S' or usermessage == 's':
+                    print("stand\n")
+                    outtxt += "stand\n"
                     player.stand()
                     break
-                elif usermessage == "D" or usermessage == "d":
+                # プレイヤーがダブルダウンを選択した場合
+                elif usermessage == 'D' or usermessage == 'd':
                     player.doubledown(dealer)
                     break
                 else:
@@ -339,13 +416,17 @@ def main():
         dealer.continuehit()
 
         # 勝敗を判定する
-        gamemanager.judge()
-        print("continue? y/n")
-        hoge = input()
-        if (hoge == "n"):
+        outtxt += gamemanager.judge() + "\n"
+
+        # ループの処理
+        loopnum -= 1
+        if (loopnum == 0):
+            file = open('test.txt', 'w')
+            file.writelines(outtxt)
             break
         else:
-            pass
+            print("\n")
+            outtxt += "\n"
 
 
 # デッキ確認用関数
@@ -359,4 +440,4 @@ def showdeck():
 
 if __name__ == "__main__":
     main()
-#    showdeck()
+#  showdeck()
