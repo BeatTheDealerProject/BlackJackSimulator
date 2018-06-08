@@ -1,4 +1,3 @@
-import sys
 import random
 
 '''
@@ -215,11 +214,7 @@ class Dealer(GamePlayer):
 
 
 '''
-<<<<<<< HEAD
-ゲームを管理するクラス 
-=======
 ゲームを管理するクラス
->>>>>>> origin/master
 主にゲームの勝敗に関連する事柄を管理するのでデッキ自体の操作などは行わない
 '''
 
@@ -277,11 +272,7 @@ class GameManager:
 
 '''
 メイン関数
-<<<<<<< HEAD
-ゲーム全体の流れをここに記述する 
-=======
 ゲーム全体の流れをここに記述する
->>>>>>> origin/master
 プレイヤーの追加はここで手動で行ってください
 '''
 
@@ -305,6 +296,7 @@ def main():
 
     # txtデータとして出力するものをstring形式で初期化
     outtxt = ""
+    intext = ""
 
     # ゲーム全体のループ回数
     # hogeは現在のループ回数を表現するために作成したものなので消してしまっても特に影響はない
@@ -366,6 +358,7 @@ def main():
             player.totalvalue()
         print("dealer up card :", dealer.cards[0].suit, dealer.cards[0].rank)
         outtxt += "dealer---" + dealer.cards[0].suit + dealer.cards[0].rank + "\n"
+        intext += str(dealer.cards[0].value)
         for x in players:
             print(x.name, "up card ", end="")
             outtxt += x.name + "---"
@@ -375,7 +368,19 @@ def main():
                 outtxt += x.cards[j].suit + x.cards[j].rank + ","
                 j += 1
             outtxt += "\n"
+            intext +="," + str(x.total) + "," + str(x.acetotal - x.usedace)
             print(" total -", x.total)
+
+            # プレイヤーの選択はベーシックストラテジーに沿って行われるものとする
+            # プレイヤーの手札にA(11)が残っている場合
+            if player.acetotal - player.usedace > 0:
+                txtmessage = basicstrategy[player.cards[0].value + player.cards[1].value + 5][
+                    dealer.cards[0].value - 2]
+            # プレイヤーの手札にA(11)が残っていない場合
+            else:
+                txtmessage = basicstrategy[player.total - 4][dealer.cards[0].value - 2]
+
+            intext += "," + txtmessage + "\n\n"
         print("")
 
         # 各プレイヤーに対して選択肢を提示する
@@ -398,6 +403,7 @@ def main():
                 # プレイヤーの手札にA(11)が残っていない場合
                 else:
                     usermessage = basicstrategy[player.total - 4][dealer.cards[0].value - 2]
+
 
                 # プレイヤーの選択による行動の分岐を記述
                 # プレイヤーがヒットを選択した場合
@@ -429,8 +435,8 @@ def main():
         # ループの処理
         loopnum -= 1
         if (loopnum == 0):
-            file = open('test.txt', 'w')
-            file.writelines(outtxt)
+            file = open('input.txt', 'w')
+            file.writelines(intext)
             break
         else:
             print("\n")
