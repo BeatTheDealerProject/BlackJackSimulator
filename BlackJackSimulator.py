@@ -133,6 +133,7 @@ class Player(GamePlayer):
     # プレイヤーの初期化
     def __init__(self, name):
         self.name = name
+        self.totalwin = 0
         super().__init__()
 
     # プレイヤーにカードを配るときに使用する関数
@@ -164,6 +165,10 @@ class Player(GamePlayer):
         for x in self.cards:
             print('/', x.suit, x.rank)
         print("---total---: ", self.total, "\n")
+
+    # プレイヤーの勝利回数を増やす
+    def addtotalwin(self):
+        self.totalwin += 1
 
 
 '''
@@ -235,9 +240,11 @@ class GameManager:
                 print(player.name, "lose (player burst)")
                 return "lose"
             elif player.burst == False and self.dealer.burst == True:
+                player.addtotalwin()
                 print(player.name, "win (dealer burst)")
                 return "win"
             elif player.total > self.dealer.total:
+                player.addtotalwin()
                 print(player.name, "win (player>dealer)")
                 return "win"
             elif player.total < self.dealer.total:
@@ -248,6 +255,7 @@ class GameManager:
                     print(player.name, "draw (natural vs natural)")
                     return "draw"
                 elif player.naturalbj and self.dealer.normalbj:
+                    player.addtotalwin()
                     print(player.name, "win (natural vs normal)")
                     return "win"
                 elif player.normalbj and self.dealer.naturalbj:
@@ -295,60 +303,54 @@ def main():
     cutcard = len(dealer.deck.Cards) / 2
 
     # txtデータとして出力するものをstring形式で初期化
-    outtxt = ""
     intext = ""
 
     # ゲーム全体のループ回数
-    # hogeは現在のループ回数を表現するために作成したものなので消してしまっても特に影響はない
-    loopnum = 50
-    hoge = loopnum + 1
+    totalGameNum = remainingGameNum = 50
 
     # 参照するベーシックストラテジーの配列を定義
-    basicstrategy = [['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],
-                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],
-                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],
-                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],
-                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],
-                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],
-                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],
-                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],
-                     ['h', 'h', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],
-                     ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],
-                     ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],
-                     ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],
-                     ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],
-                     ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],
-                     ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],
-                     ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],
-                     ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],
-                     ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],
+    basicstrategy = [['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 4
+                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 5
+                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 6
+                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 7
+                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 8
+                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 9
+                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 10
+                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 11
+                     ['h', 'h', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],  # 12
+                     ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],  # 13
+                     ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],  # 14
+                     ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],  # 15
+                     ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],  # 16
+                     ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],  # 17
+                     ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],  # 18
+                     ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],  # 19
+                     ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],  # 20
+                     ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],  # 21
                      # ここからはAがある場合のストラテジー表
-                     ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],
-                     ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],
-                     ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],
-                     ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],
-                     ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],
-                     ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'],
-                     ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-                     ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-                     ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-                     ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H']
+                     ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],  # AA
+                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # A2
+                     ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],  # A3
+                     ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],  # A4
+                     ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],  # A5
+                     ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],  # A6
+                     ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'],  # A7
+                     ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],  # A8
+                     ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],  # A9
+                     ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S']   # A10
                      ]
-
-    print("wellcome!")
 
     # メインループ
     while True:
         # UI用のプリント文
-        print('--------------------------------------------------------------\n')
-        print('---' + str(hoge - loopnum) + '---')
+        print('--------------------------------------------------------------\n---' + str(totalGameNum - remainingGameNum) + '---')
 
         # ゲームを始める前にデッキの中からカットカードが出てきているかを確認し、出てきていれば、デッキをシャッフルする
         if (dealer.deck.current > cutcard):
             dealer.deck.shuffle(dealer.shufflenum)
 
         # GameManagerの初期化
-        gamemanager = GameManager(players, dealer)
+        gamemanager: GameManager = GameManager(players, dealer)
 
         # ディーラーが各プレイヤー（自身含む）に初期カードを配る
         dealer.firstdeal(players)
@@ -357,24 +359,20 @@ def main():
         for player in players:
             player.totalvalue()
         print("dealer up card :", dealer.cards[0].suit, dealer.cards[0].rank)
-        outtxt += "dealer---" + dealer.cards[0].suit + dealer.cards[0].rank + "\n"
         intext += str(dealer.cards[0].value)
         for x in players:
             print(x.name, "up card ", end="")
-            outtxt += x.name + "---"
             j = 0
             while j < 2:
                 print("/", x.cards[j].suit, x.cards[j].rank, end=" ")
-                outtxt += x.cards[j].suit + x.cards[j].rank + ","
                 j += 1
-            outtxt += "\n"
             intext +="," + str(x.total) + "," + str(x.acetotal - x.usedace)
             print(" total -", x.total)
 
             # プレイヤーの選択はベーシックストラテジーに沿って行われるものとする
             # プレイヤーの手札にA(11)が残っている場合
             if player.acetotal - player.usedace > 0:
-                txtmessage = basicstrategy[player.cards[0].value + player.cards[1].value + 5][
+                txtmessage = basicstrategy[player.total + 6][
                     dealer.cards[0].value - 2]
             # プレイヤーの手札にA(11)が残っていない場合
             else:
@@ -409,14 +407,12 @@ def main():
                 # プレイヤーがヒットを選択した場合
                 if usermessage == 'H' or usermessage == 'h':
                     print("hit\n")
-                    outtxt += "hit\n"
                     player.hit(dealer)
                     if (player.burst == True):
                         break
                 # プレイヤーがスタンドを選択した場合
                 elif usermessage == 'S' or usermessage == 's':
                     print("stand\n")
-                    outtxt += "stand\n"
                     player.stand()
                     break
                 # プレイヤーがダブルダウンを選択した場合
@@ -430,17 +426,18 @@ def main():
         dealer.continuehit()
 
         # 勝敗を判定する
-        outtxt += gamemanager.judge() + "\n"
+        gamemanager.judge()
 
         # ループの処理
-        loopnum -= 1
-        if (loopnum == 0):
+        remainingGameNum -= 1
+        if (remainingGameNum == 0):
             file = open('input.txt', 'w')
+            winper = (players[0].totalwin/totalGameNum) * 100
+            intext += "Winning percentage" + str(winper) + "%"
             file.writelines(intext)
             break
         else:
             print("\n")
-            outtxt += "\n"
 
 
 # デッキ確認用関数
