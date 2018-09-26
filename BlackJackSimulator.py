@@ -5,10 +5,6 @@ import random
 rank:カードのランク, suit:カードのスート, value:カードから得る数
 '''
 
-
-# gitテスト用変更点 12345
-
-
 class Card:
     RANKS = ('A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K')
     SUITS = ('Spade', 'Heart', 'Diamond', 'Club')
@@ -57,6 +53,17 @@ class Deck:
     # シャッフルをする関数
     # shuffleNumに入れる数字によりシャッフルの回数を制御
     def shuffle(self, shuffleNum):
+        # 新しいシャッフル方法
+        self.current = 0
+        num = len(self.Cards) - 1
+        while shuffleNum > 0:
+            cut = random.randrange(0, len(self.Cards))
+            temp = self.Cards[cut]
+            self.Cards[cut] = self.Cards[num]
+            self.Cards[num] = temp
+            shuffleNum -= 1
+        '''
+        # もともとのシャッフル方法
         self.current = 0
         while shuffleNum > 0:
             cut1 = random.randrange(0, len(self.Cards) / 2)
@@ -65,7 +72,8 @@ class Deck:
             self.Cards[cut1] = self.Cards[cut2]
             self.Cards[cut2] = temp
             shuffleNum -= 1
-        print("*** deck shuffled ***")
+        '''
+        # print("*** deck shuffled ***")
 
 
 '''
@@ -134,6 +142,7 @@ class Player(GamePlayer):
     def __init__(self, name):
         self.name = name
         self.totalwin = 0
+        self.totallose = 0
         super().__init__()
 
     # プレイヤーにカードを配るときに使用する関数
@@ -161,14 +170,19 @@ class Player(GamePlayer):
     # 自身の手札を表示するUI
     def showhands(self):
         self.totalvalue()
-        print("---hands---")
+        # print("---hands---")
         for x in self.cards:
-            print('/', x.suit, x.rank)
-        print("---total---: ", self.total, "\n")
+            pass
+            # print('/', x.suit, x.rank)
+        # print("---total---: ", self.total, "\n")
 
     # プレイヤーの勝利回数を増やす
     def addtotalwin(self):
         self.totalwin += 1
+
+    # プレイヤーの敗北回数を増やす
+    def addtotallose(self):
+        self.totallose += 1
 
 
 '''
@@ -212,10 +226,11 @@ class Dealer(GamePlayer):
             self.cards.append(self.dealcard())
             self.totalvalue()
 
-        print("dealer hands: ", end="")
+        # print("dealer hands: ", end="")
         for x in self.cards:
-            print(x.suit, x.rank, ",", end="")
-        print("total: ", self.total)
+            pass
+            # print(x.suit, x.rank, ",", end="")
+        # print("total: ", self.total)
 
 
 '''
@@ -237,35 +252,38 @@ class GameManager:
         self.checkblackjack(self.dealer)
         for player in self.players:
             if player.burst == True:
-                print(player.name, "lose (player burst)")
+                player.addtotallose()
+                # print(player.name, "lose (player burst)")
                 return "lose"
             elif player.burst == False and self.dealer.burst == True:
                 player.addtotalwin()
-                print(player.name, "win (dealer burst)")
+                # print(player.name, "win (dealer burst)")
                 return "win"
             elif player.total > self.dealer.total:
                 player.addtotalwin()
-                print(player.name, "win (player>dealer)")
+                # print(player.name, "win (player>dealer)")
                 return "win"
             elif player.total < self.dealer.total:
-                print(player.name, "lose (player<dealer)")
+                player.addtotallose()
+                # print(player.name, "lose (player<dealer)")
                 return "lose"
             elif player.total == self.dealer.total:
                 if player.naturalbj and self.dealer.naturalbj:
-                    print(player.name, "draw (natural vs natural)")
+                    # print(player.name, "draw (natural vs natural)")
                     return "draw"
                 elif player.naturalbj and self.dealer.normalbj:
                     player.addtotalwin()
-                    print(player.name, "win (natural vs normal)")
+                    # print(player.name, "win (natural vs normal)")
                     return "win"
                 elif player.normalbj and self.dealer.naturalbj:
-                    print(player.name, "lose (normal vs natural)")
+                    player.addtotallose()
+                    # print(player.name, "lose (normal vs natural)")
                     return "lose"
                 elif player.normalbj and self.dealer.normalbj:
-                    print(player.name, "draw (normal vs normal)")
+                    # print(player.name, "draw (normal vs normal)")
                     return "draw"
                 else:
-                    print(player.name, " draw (player==dealer)")
+                    # print(player.name, " draw (player==dealer)")
                     return "draw"
 
     # ナチュラルブラックジャックとノーマルブラックジャックを判別する関数
@@ -285,7 +303,8 @@ class GameManager:
 '''
 
 
-def main():
+def main(strategy):
+
     # プレイヤーを作成
     p1 = Player("player1")
     #    p2 = Player("player2")
@@ -299,17 +318,114 @@ def main():
     dealer = Dealer(1)
 
     # カットカードを表現
-    # 今回はデッキの半分の位置にカットカードを固定している
+    # 今回はデッキの1/2の位置にカットカードを固定している
     cutcard = len(dealer.deck.Cards) / 2
 
     # txtデータとして出力するものをstring形式で初期化
     intext = ""
 
     # ゲーム全体のループ回数
-    totalGameNum = remainingGameNum = 50
+    totalGameNum = remainingGameNum = 100000
 
-    # 参照するベーシックストラテジーの配列を定義
-    basicstrategy = [['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 4
+
+    # メインループ
+    while True:
+        # UI用のプリント文
+        # print('--------------------------------------------------------------\n---' + str(totalGameNum - remainingGameNum) + '---')
+
+        # ゲームを始める前にデッキの中からカットカードが出てきているかを確認し、出てきていれば、デッキをシャッフルする
+        if (dealer.deck.current > cutcard):
+            dealer.deck.shuffle(dealer.shufflenum)
+
+        # GameManagerの初期化
+        gamemanager: GameManager = GameManager(players, dealer)
+
+        # ディーラーが各プレイヤー（自身含む）に初期カードを配る
+        dealer.firstdeal(players)
+
+        # ディーラーのアップカードとプレイヤーのアップカードを表示するUI部分
+        for player in players:
+            player.totalvalue()
+        for x in players:
+            j = 0
+            while j < 2:
+                j += 1
+
+            # プレイヤーの選択はベーシックストラテジーに沿って行われるものとする
+            # プレイヤーの手札にA(11)が残っている場合
+            if player.acetotal - player.usedace > 0:
+                txtmessage = strategy[player.total + 6][
+                    dealer.cards[0].value - 2]
+            # プレイヤーの手札にA(11)が残っていない場合
+            else:
+                txtmessage = strategy[player.total - 4][dealer.cards[0].value - 2]
+
+
+        # 各プレイヤーに対して選択肢を提示する
+        for player in players:
+            while 1:
+
+                # プレイヤーの選択はベーシックストラテジーに沿って行われるものとする
+                # プレイヤーの手札にA(11)が残っている場合
+                if player.acetotal - player.usedace > 0:
+                    usermessage = strategy[player.cards[0].value + player.cards[1].value + 5][dealer.cards[0].value - 2]
+                # プレイヤーの手札にA(11)が残っていない場合
+                else:
+                    usermessage = strategy[player.total - 4][dealer.cards[0].value - 2]
+
+
+                # プレイヤーの選択による行動の分岐を記述
+                # プレイヤーがヒットを選択した場合
+                if usermessage == 'H' or usermessage == 'h':
+                    # print("hit\n")
+                    player.hit(dealer)
+                    if (player.burst == True):
+                        break
+                # プレイヤーがスタンドを選択した場合
+                elif usermessage == 'S' or usermessage == 's':
+                    # print("stand\n")
+                    player.stand()
+                    break
+                # プレイヤーがダブルダウンを選択した場合
+                elif usermessage == 'D' or usermessage == 'd':
+                    player.doubledown(dealer)
+                    break
+                else:
+                    pass
+
+        # ディーラーは17を超えるまでヒットを続ける
+        dealer.continuehit()
+
+        # 勝敗を判定する
+        gamemanager.judge()
+
+        if(remainingGameNum%10000==0):
+            print(remainingGameNum)
+
+        # ループの処理
+        remainingGameNum -= 1
+        if (remainingGameNum == 0):
+            file = open('result.txt', 'w')
+            intext += "win : " + str(player.totalwin) + "\nlose : " + str(player.totallose) + \
+                      "\ndraw : " + str(totalGameNum - player.totalwin - player.totallose)
+            file.writelines(intext)
+            break
+        else:
+            pass
+            # print("\n")
+
+
+# デッキ確認用関数
+def showdeck():
+    dealer = Dealer(2)
+    i = 0
+    for x in dealer.deck.Cards:
+        print(i + 1, x.suit, x.rank)
+        i += 1
+
+
+if __name__ == "__main__":
+  main([['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 4
                      ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 5
                      ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 6
                      ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 7
@@ -334,121 +450,9 @@ def main():
                      ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],  # A4
                      ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],  # A5
                      ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],  # A6
-                     ['S', 'S', 'S', 'S', 'S', 'H', 'H', 'H', 'H', 'H'],  # A7
+                     ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'H', 'H', 'S'],  # A7
                      ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],  # A8
                      ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],  # A9
                      ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S']   # A10
-                     ]
-
-    # メインループ
-    while True:
-        # UI用のプリント文
-        print('--------------------------------------------------------------\n---' + str(totalGameNum - remainingGameNum) + '---')
-
-        # ゲームを始める前にデッキの中からカットカードが出てきているかを確認し、出てきていれば、デッキをシャッフルする
-        if (dealer.deck.current > cutcard):
-            dealer.deck.shuffle(dealer.shufflenum)
-
-        # GameManagerの初期化
-        gamemanager: GameManager = GameManager(players, dealer)
-
-        # ディーラーが各プレイヤー（自身含む）に初期カードを配る
-        dealer.firstdeal(players)
-
-        # ディーラーのアップカードとプレイヤーのアップカードを表示するUI部分
-        for player in players:
-            player.totalvalue()
-        print("dealer up card :", dealer.cards[0].suit, dealer.cards[0].rank)
-        intext += str(dealer.cards[0].value)
-        for x in players:
-            print(x.name, "up card ", end="")
-            j = 0
-            while j < 2:
-                print("/", x.cards[j].suit, x.cards[j].rank, end=" ")
-                j += 1
-            intext +="," + str(x.total) + "," + str(x.acetotal - x.usedace)
-            print(" total -", x.total)
-
-            # プレイヤーの選択はベーシックストラテジーに沿って行われるものとする
-            # プレイヤーの手札にA(11)が残っている場合
-            if player.acetotal - player.usedace > 0:
-                txtmessage = basicstrategy[player.total + 6][
-                    dealer.cards[0].value - 2]
-            # プレイヤーの手札にA(11)が残っていない場合
-            else:
-                txtmessage = basicstrategy[player.total - 4][dealer.cards[0].value - 2]
-
-            intext += "," + txtmessage + "\n\n"
-        print("")
-
-        # 各プレイヤーに対して選択肢を提示する
-        for player in players:
-            while 1:
-                '''
-                手動で操作する際の処理
-                print(player.name, "turn")
-                for card in player.cards:
-                    print("/", card.suit, card.rank)
-                print("total - ", player.total)
-                print("press: HIT = H, STAND = S, DOUBLEDOWN = D")
-                usermessage = input()
-                '''
-
-                # プレイヤーの選択はベーシックストラテジーに沿って行われるものとする
-                # プレイヤーの手札にA(11)が残っている場合
-                if player.acetotal - player.usedace > 0:
-                    usermessage = basicstrategy[player.cards[0].value + player.cards[1].value + 5][dealer.cards[0].value - 2]
-                # プレイヤーの手札にA(11)が残っていない場合
-                else:
-                    usermessage = basicstrategy[player.total - 4][dealer.cards[0].value - 2]
-
-
-                # プレイヤーの選択による行動の分岐を記述
-                # プレイヤーがヒットを選択した場合
-                if usermessage == 'H' or usermessage == 'h':
-                    print("hit\n")
-                    player.hit(dealer)
-                    if (player.burst == True):
-                        break
-                # プレイヤーがスタンドを選択した場合
-                elif usermessage == 'S' or usermessage == 's':
-                    print("stand\n")
-                    player.stand()
-                    break
-                # プレイヤーがダブルダウンを選択した場合
-                elif usermessage == 'D' or usermessage == 'd':
-                    player.doubledown(dealer)
-                    break
-                else:
-                    print("you can chose H or S or D")
-
-        # ディーラーは17を超えるまでヒットを続ける
-        dealer.continuehit()
-
-        # 勝敗を判定する
-        gamemanager.judge()
-
-        # ループの処理
-        remainingGameNum -= 1
-        if (remainingGameNum == 0):
-            file = open('input.txt', 'w')
-            winper = (players[0].totalwin/totalGameNum) * 100
-            intext += "Winning percentage" + str(winper) + "%"
-            file.writelines(intext)
-            break
-        else:
-            print("\n")
-
-
-# デッキ確認用関数
-def showdeck():
-    dealer = Dealer(2)
-    i = 0
-    for x in dealer.deck.Cards:
-        print(i + 1, x.suit, x.rank)
-        i += 1
-
-
-if __name__ == "__main__":
-    main()
+                     ])
 #  showdeck()
