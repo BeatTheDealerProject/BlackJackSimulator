@@ -1,15 +1,15 @@
-'''
+"""
 メイン関数
 ゲーム全体の流れをここに記述する
 プレイヤーの追加はここで手動で行ってください
-'''
-
+"""
 
 from BlackJack.Player import *
 from BlackJack.Dealer import *
 from BlackJack.GameManager import *
-def main(strategy):
 
+
+def main(strategy):
     # プレイヤーを作成
     p1 = Player("player1")
     #    p2 = Player("player2")
@@ -27,11 +27,23 @@ def main(strategy):
     cutcard = len(dealer.deck.Cards) / 2
 
     # txtデータとして出力するものをstring形式で初期化
-    intext = ""
+    text = ""
+    debagText = ""
 
     # ゲーム全体のループ回数
-    totalGameNum = remainingGameNum = 100000
+    totalGameNum = remainingGameNum = 1000
 
+    split_strategy = [["P", "P", "P", "P", "P", "P", "H", "H", "H", "H"],  # 2,2
+                      ["P", "P", "P", "P", "P", "P", "H", "H", "H", "H"],  # 3,3
+                      ["H", "H", "H", "P", "P", "H", "H", "H", "H", "H"],  # 4,4
+                      ["D", "D", "D", "D", "D", "D", "D", "D", "H", "H"],  # 5,5
+                      ["P", "P", "P", "P", "P", "H", "H", "H", "H", "H"],  # 6,6
+                      ["P", "P", "P", "P", "P", "P", "H", "H", "H", "H"],  # 7,7
+                      ["P", "P", "P", "P", "P", "P", "P", "P", "P", "P"],  # 8,8
+                      ["P", "P", "P", "P", "P", "S", "P", "P", "S", "S"],  # 9,9
+                      ["S", "S", "S", "S", "S", "S", "S", "S", "S", "S"],  # 10,10
+                      ["P", "P", "P", "P", "P", "P", "P", "P", "P", "P"],  # A,A
+                      ]
 
     # メインループ
     while True:
@@ -39,42 +51,24 @@ def main(strategy):
         if (dealer.deck.current > cutcard):
             dealer.deck.shuffle(dealer.shufflenum)
 
-        # GameManagerの初期化
-        gamemanager: GameManager = GameManager(players, dealer)
-
         # ディーラーが各プレイヤー（自身含む）に初期カードを配る
         dealer.firstdeal(players)
 
-        # ディーラーのアップカードとプレイヤーのアップカードを表示するUI部分
+        # 各プレイヤーの点数を更新
         for player in players:
             player.totalvalue()
-        for x in players:
-            j = 0
-            while j < 2:
-                j += 1
-
-            # プレイヤーの選択はベーシックストラテジーに沿って行われるものとする
-            # プレイヤーの手札にA(11)が残っている場合
-            if player.acetotal - player.usedace > 0:
-                txtmessage = strategy[player.total + 6][
-                    dealer.cards[0].value - 2]
-            # プレイヤーの手札にA(11)が残っていない場合
-            else:
-                txtmessage = strategy[player.total - 4][dealer.cards[0].value - 2]
 
 
         # 各プレイヤーに対して選択肢を提示する
-        for player in players:
-            while 1:
-
+        for i, player in enumerate(players):
+            while remainingGameNum > 0:
                 # プレイヤーの選択はベーシックストラテジーに沿って行われるものとする
                 # プレイヤーの手札にA(11)が残っている場合
                 if player.acetotal - player.usedace > 0:
-                    usermessage = strategy[player.cards[0].value + player.cards[1].value + 5][dealer.cards[0].value - 2]
+                    usermessage = strategy[player.total + 6][dealer.cards[0].value - 2]
                 # プレイヤーの手札にA(11)が残っていない場合
                 else:
                     usermessage = strategy[player.total - 4][dealer.cards[0].value - 2]
-
 
                 # プレイヤーの選択による行動の分岐を記述
                 # プレイヤーがヒットを選択した場合
@@ -92,29 +86,33 @@ def main(strategy):
                 elif usermessage == 'D' or usermessage == 'd':
                     player.doubledown(dealer)
                     break
-                else:
-                    pass
 
         # ディーラーは17を超えるまでヒットを続ける
         dealer.continuehit()
 
+        # GameManagerの初期化
+        gamemanager: GameManager = GameManager(players, dealer)
+
         # 勝敗を判定する
         gamemanager.judge()
 
-        if(remainingGameNum%10000==0):
+
+        if (remainingGameNum % 100 == 0):
             print(remainingGameNum)
 
         # ループの処理
         remainingGameNum -= 1
         if (remainingGameNum == 0):
-            file = open('result.txt', 'w')
-            intext += "win : " + str(player.totalwin) + "\nlose : " + str(player.totallose) + \
-                      "\ndraw : " + str(totalGameNum - player.totalwin - player.totallose)
-            file.writelines(intext)
+            for player in players:
+                file = open('result.txt', 'w')
+                text += "win : " + str(player.totalwin) + "\nlose : " + str(player.totallose) + \
+                        "\ndraw : " + str(totalGameNum - player.totalwin - player.totallose)
+                file.writelines(text)
+
+                debagfile = open('debag.txt', 'w')
+                debagfile.writelines(debagText)
+                break
             break
-        else:
-            pass
-            # print("\n")
 
 
 # デッキ確認用関数
@@ -127,34 +125,34 @@ def showdeck():
 
 
 if __name__ == "__main__":
-  main([['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 4
-                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 5
-                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 6
-                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 7
-                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 8
-                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 9
-                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 10
-                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 11
-                     ['h', 'h', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],  # 12
-                     ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],  # 13
-                     ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],  # 14
-                     ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],  # 15
-                     ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],  # 16
-                     ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],  # 17
-                     ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],  # 18
-                     ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],  # 19
-                     ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],  # 20
-                     ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],  # 21
-                     # ここからはAがある場合のストラテジー表
-                     ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],  # AA
-                     ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # A2
-                     ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],  # A3
-                     ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],  # A4
-                     ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],  # A5
-                     ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],  # A6
-                     ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'H', 'H', 'S'],  # A7
-                     ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],  # A8
-                     ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],  # A9
-                     ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S']   # A10
-                     ])
+    main([['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 4
+          ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 5
+          ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 6
+          ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 7
+          ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 8
+          ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 9
+          ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 10
+          ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 11
+          ['h', 'h', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],  # 12
+          ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],  # 13
+          ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],  # 14
+          ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],  # 15
+          ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],  # 16
+          ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],  # 17
+          ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],  # 18
+          ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],  # 19
+          ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],  # 20
+          ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],  # 21
+          # ここからはAがある場合のストラテジー表
+          ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],  # AA
+          ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # A2
+          ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],  # A3
+          ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],  # A4
+          ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],  # A5
+          ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],  # A6
+          ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'H', 'H', 'S'],  # A7
+          ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],  # A8
+          ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],  # A9
+          ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S']  # A10
+          ])
 #  showdeck()
