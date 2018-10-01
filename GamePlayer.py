@@ -1,7 +1,7 @@
-'''
+"""
 ゲーム参加者を表すスーパークラス
 プレイヤーとディーラーとで共通のアクションを定義していく
-'''
+"""
 
 
 class GamePlayer:
@@ -34,18 +34,18 @@ class GamePlayer:
         cardnum = len(self.cards)
 
         while i < cardnum:
-            if (self.cards[i].rank == 'A'):
+            if self.cards[i].rank == 'A':
                 self.acetotal += 1
             self.total += self.cards[i].value
             i += 1
         self.total -= 10 * self.usedace
 
         # プレイヤーのバースト判定の処理
-        if (self.total > 21):
-            if (self.acetotal - self.usedace > 0):
+        if self.total > 21:
+            if self.acetotal - self.usedace > 0:
                 self.total -= 10
                 self.usedace += 1
-                if (self.total > 21):
+                if self.total > 21:
                     self.burst = True
             else:
                 self.burst = True
