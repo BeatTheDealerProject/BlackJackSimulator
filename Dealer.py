@@ -1,12 +1,13 @@
-'''
+"""
 ディーラーを定義するクラス
 ディーラーがデッキを管理しているイメージなのでディーラークラスの中にデッキを作成している
 カードを配る処理はこのクラスに記述していく
-'''
+"""
 
 
 from BlackJack.GamePlayer import *
 from BlackJack.Deck import *
+
 
 class Dealer(GamePlayer):
     # ディーラーの初期化
@@ -42,9 +43,4 @@ class Dealer(GamePlayer):
             self.cards.append(self.dealcard())
             self.totalvalue()
 
-        # print("dealer hands: ", end="")
-        for x in self.cards:
-            pass
-            # print(x.suit, x.rank, ",", end="")
-        # print("total: ", self.total)
 

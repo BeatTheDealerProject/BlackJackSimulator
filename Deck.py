@@ -1,11 +1,12 @@
 """
 Cardクラスからデッキを作成するクラス
 使用するデッキの数と、デッキのシャッフル、使用している山札を担当する
-実際のカードが入っているのはDeckの中のCardsなので注意すること"""
+実際のカードが入っているのはDeckの中のCardsなので注意すること
+"""
 
 import random
 from BlackJack.Card import *
-import BlackJack.Card
+
 
 class Deck:
     CARDS = [Card(rank, suit) for suit in Card.SUITS for rank in Card.RANKS]
@@ -36,4 +37,3 @@ class Deck:
             self.Cards[cut1] = self.Cards[cut2]
             self.Cards[cut2] = temp
             shuffleNum -= 1
-        # print("*** deck shuffled ***")

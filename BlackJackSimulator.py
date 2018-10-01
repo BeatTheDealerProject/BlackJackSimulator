@@ -48,7 +48,7 @@ def main(strategy):
     # メインループ
     while True:
         # ゲームを始める前にデッキの中からカットカードが出てきているかを確認し、出てきていれば、デッキをシャッフルする
-        if (dealer.deck.current > cutcard):
+        if dealer.deck.current > cutcard:
             dealer.deck.shuffle(dealer.shufflenum)
 
         # ディーラーが各プレイヤー（自身含む）に初期カードを配る
@@ -58,6 +58,27 @@ def main(strategy):
         for player in players:
             player.totalvalue()
 
+        # スプリットするかどうかを先に確認する
+        for i, player in enumerate(players):
+            if player.cards[0].rank == player.cards[1].rank:
+                usermessage = split_strategy[player.cards[0].value - 2][dealer.cards[0].value - 2]
+                if usermessage == 'P' or usermessage == 'p':
+
+                    # プレイヤーのクローンを作成し、ゲームに参加するプレイヤーとして追加登録する
+                    playerClone = Player(player.name, "clone")
+                    players.insert(i+1, playerClone)
+
+                    # クローンにプレイヤーが所持しているカードを一枚渡す
+                    playerClone.dealedcard(player.cards[1])
+                    del player.cards[1]
+
+                    # 使用済みAの数を初期化する
+                    player.usedace = 0
+                    playerClone.usedace = 0
+
+                    # プレイヤーとクローンにカードを配り直す
+                    player.dealedcard(dealer.dealcard())
+                    playerClone.dealedcard(dealer.dealcard())
 
         # 各プレイヤーに対して選択肢を提示する
         for i, player in enumerate(players):
@@ -96,17 +117,34 @@ def main(strategy):
         # 勝敗を判定する
         gamemanager.judge()
 
+        # デバッグ
+        for player in players:
+            debagText += "\n" + str(remainingGameNum) +  "\n" + player.name +"-" + player.tag + "\n"
+            for card in player.cards:
+                debagText += str(card.value) + "-"
+            debagText += "player total = " + str(player.total) + "\n"
 
-        if (remainingGameNum % 100 == 0):
+        debagText += "\ndealer\n"
+        for card in dealer.cards:
+            debagText += str(card.value) + "-"
+        debagText += "dealer total = " + str(dealer.total)
+        debagText += "\n\n-----------------------\n\n"
+
+        # クローンを削除する
+        for i, player in enumerate(players):
+            if player.tag == "clone":
+                del players[i]
+
+        if remainingGameNum % 100 == 0:
             print(remainingGameNum)
 
         # ループの処理
         remainingGameNum -= 1
-        if (remainingGameNum == 0):
+        if remainingGameNum == 0:
             for player in players:
                 file = open('result.txt', 'w')
                 text += "win : " + str(player.totalwin) + "\nlose : " + str(player.totallose) + \
-                        "\ndraw : " + str(totalGameNum - player.totalwin - player.totallose)
+                        "\ndraw : " + str(player.totaldraw)
                 file.writelines(text)
 
                 debagfile = open('debag.txt', 'w')
@@ -155,4 +193,5 @@ if __name__ == "__main__":
           ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],  # A9
           ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S']  # A10
           ])
-#  showdeck()
+    # デッキ確認用のデバッグ関数
+    # showdeck()
