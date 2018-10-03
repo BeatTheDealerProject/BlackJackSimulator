@@ -33,6 +33,12 @@ def main(strategy):
     # ゲーム全体のループ回数
     totalGameNum = remainingGameNum = 1000
 
+    # 最小ベットの宣言
+    minbet = 100
+
+    # 最大ベットの宣言
+    maxbet = 10000
+
     split_strategy = [["P", "P", "P", "P", "P", "P", "H", "H", "H", "H"],  # 2,2
                       ["P", "P", "P", "P", "P", "P", "H", "H", "H", "H"],  # 3,3
                       ["H", "H", "H", "P", "P", "H", "H", "H", "H", "H"],  # 4,4
@@ -47,9 +53,17 @@ def main(strategy):
 
     # メインループ
     while True:
+
+        if remainingGameNum % 100 == 0:
+            print(remainingGameNum)
+
         # ゲームを始める前にデッキの中からカットカードが出てきているかを確認し、出てきていれば、デッキをシャッフルする
         if dealer.deck.current > cutcard:
             dealer.deck.shuffle(dealer.shufflenum)
+
+        # 各プレイヤーのベット
+        for player in players:
+            player.bet(minbet)
 
         # ディーラーが各プレイヤー（自身含む）に初期カードを配る
         dealer.firstdeal(players)
@@ -65,7 +79,7 @@ def main(strategy):
                 if usermessage == 'P' or usermessage == 'p':
 
                     # プレイヤーのクローンを作成し、ゲームに参加するプレイヤーとして追加登録する
-                    playerClone = Player(player.name, "clone")
+                    playerClone = Player(player.name, betMoney=player.betMoney,tag="clone")
                     players.insert(i+1, playerClone)
 
                     # クローンにプレイヤーが所持しているカードを一枚渡す
@@ -81,8 +95,8 @@ def main(strategy):
                     playerClone.dealedcard(dealer.dealcard())
 
         # 各プレイヤーに対して選択肢を提示する
-        for i, player in enumerate(players):
-            while remainingGameNum > 0:
+        for player in players:
+            while True:
                 # プレイヤーの選択はベーシックストラテジーに沿って行われるものとする
                 # プレイヤーの手札にA(11)が残っている場合
                 if player.acetotal - player.usedace > 0:
@@ -92,17 +106,18 @@ def main(strategy):
                     usermessage = strategy[player.total - 4][dealer.cards[0].value - 2]
 
                 # プレイヤーの選択による行動の分岐を記述
+
                 # プレイヤーがヒットを選択した場合
                 if usermessage == 'H' or usermessage == 'h':
-                    # print("hit\n")
                     player.hit(dealer)
                     if (player.burst == True):
                         break
+
                 # プレイヤーがスタンドを選択した場合
                 elif usermessage == 'S' or usermessage == 's':
-                    # print("stand\n")
                     player.stand()
                     break
+
                 # プレイヤーがダブルダウンを選択した場合
                 elif usermessage == 'D' or usermessage == 'd':
                     player.doubledown(dealer)
@@ -120,23 +135,29 @@ def main(strategy):
         # デバッグ
         for player in players:
             debagText += "\n" + str(remainingGameNum) +  "\n" + player.name +"-" + player.tag + "\n"
+            debagText += str(player.betMoney) + "\n"
+            debagText += player.debagtxt + "\n"
+            player.debagtxt = ""
             for card in player.cards:
                 debagText += str(card.value) + "-"
             debagText += "player total = " + str(player.total) + "\n"
-
         debagText += "\ndealer\n"
         for card in dealer.cards:
             debagText += str(card.value) + "-"
         debagText += "dealer total = " + str(dealer.total)
+        debagText += "\ntotal:" + str(players[0].money)
         debagText += "\n\n-----------------------\n\n"
 
         # クローンを削除する
-        for i, player in enumerate(players):
-            if player.tag == "clone":
-                del players[i]
-
-        if remainingGameNum % 100 == 0:
-            print(remainingGameNum)
+        while True:
+            cloneflg = False
+            for i, player in enumerate(players):
+                if player.tag == "clone":
+                    del player
+                    del players[i]
+                    cloneflg = True
+            if cloneflg==False:
+                break
 
         # ループの処理
         remainingGameNum -= 1

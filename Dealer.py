@@ -22,6 +22,8 @@ class Dealer(GamePlayer):
     def dealcard(self):
         card = self.deck.Cards[self.deck.current]
         self.deck.current += 1
+        if self.deck.current == len(self.deck.Cards):
+            self.deck.current = 0
         return card
 
     # 一番最初にカードを配る際の関数

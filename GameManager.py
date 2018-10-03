@@ -22,37 +22,33 @@ class GameManager:
                 if player.tag == "clone":
                     for i, x in enumerate(self.players):
                         if x.name == player.name:
-                            self.players[i].addtotallose()
+                            self.players[i].addtotallose(player.betMoney)
                             break
-                player.addtotallose()
-                # print(player.name, "lose (player burst)")
+                player.addtotallose(player.betMoney)
             # プレイヤーがバーストせずにディーラーがバーストした場合
             elif player.burst == False and self.dealer.burst == True:
                 if player.tag == "clone":
                     for i, x in enumerate(self.players):
                         if x.name == player.name:
-                            self.players[i].addtotalwin()
+                            self.players[i].addtotalwin(player.betMoney)
                             break
-                player.addtotalwin()
-                # print(player.name, "win (dealer burst)")
+                player.addtotalwin(player.betMoney)
             # プレイヤーのトータルがディーラーのトータルよりも多い場合
             elif player.total > self.dealer.total:
                 if player.tag == "clone":
                     for i, x in enumerate(self.players):
                         if x.name == player.name:
-                            self.players[i].addtotalwin()
+                            self.players[i].addtotalwin(player.betMoney)
                             break
-                player.addtotalwin()
-                # print(player.name, "win (player>dealer)")
+                player.addtotalwin(player.betMoney)
             # プレイヤーのトータルがディーラーのトータルよりも少ない場合
             elif player.total < self.dealer.total:
                 if player.tag == "clone":
                     for i, x in enumerate(self.players):
                         if x.name == player.name:
-                            self.players[i].addtotallose()
+                            self.players[i].addtotallose(player.betMoney)
                             break
-                player.addtotallose()
-                # print(player.name, "lose (player<dealer)")
+                player.addtotallose(player.betMoney)
             # プレイヤーのトータルとディーラーのトータルが同じ場合
             elif player.total == self.dealer.total:
                 # プレイヤーがナチュラルブラックジャックかつディーラーがナチュラルブラックジャック
@@ -63,25 +59,22 @@ class GameManager:
                                 self.players[i].addtotaldraw()
                                 break
                     player.addtotaldraw()
-                    # print(player.name, "draw (natural vs natural)")
                 # プレイヤーがナチュラルブラックジャックかつディーラーがノーマルブラックジャック
                 elif player.naturalbj and self.dealer.normalbj:
                     if player.tag == "clone":
                         for i, x in enumerate(self.players):
                             if x.name == player.name:
-                                self.players[i].addtotalwin()
+                                self.players[i].addtotalwin(player.betMoney)
                                 break
-                    player.addtotalwin()
-                    # print(player.name, "win (natural vs normal)")
+                    player.addtotalwin(player.betMoney)
                 # プレイヤーがノーマルブラックジャックかつディーラーがナチュラルブラックジャック
                 elif player.normalbj and self.dealer.naturalbj:
                     if player.tag == "clone":
                         for i, x in enumerate(self.players):
                             if x.name == player.name:
-                                self.players[i].addtotallose()
+                                self.players[i].addtotallose(player.betMoney)
                                 break
-                    player.addtotallose()
-                    # print(player.name, "lose (normal vs natural)")
+                    player.addtotallose(player.betMoney)
                 # プレイヤーがノーマルブラックジャックかつディーラーがノーマルブラックジャック
                 elif player.normalbj and self.dealer.normalbj:
                     if player.tag == "clone":
@@ -90,15 +83,13 @@ class GameManager:
                                 self.players[i].addtotaldraw()
                                 break
                     player.addtotaldraw()
-                    # print(player.name, "draw (normal vs normal)")
                 else:
                     if player.tag == "clone":
                         for i, x in enumerate(self.players):
                             if x.name == player.name:
-                                self.players[i].addtotalwin()
+                                self.players[i].addtotaldraw()
                                 break
                     player.addtotaldraw()
-                    # print(player.name, " draw (player==dealer)")
 
     # ナチュラルブラックジャックとノーマルブラックジャックを判別する関数
     # 入力にプレイヤー個人またはディーラ－個人を与える
