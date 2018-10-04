@@ -49,6 +49,14 @@ class GameManager:
                             self.players[i].addtotallose(player.betMoney)
                             break
                 player.addtotallose(player.betMoney)
+            # プレイヤーがナチュラルブラックジャックを達成して勝利した場合
+            elif player.naturalbj and player.total > self.dealer.total:
+                if player.tag=="clone":
+                    for i, x in enumerate(self.players):
+                        if x.name == player.name:
+                            self.players[i].addtotalwin(player.betMoney * 1.5)
+                            break
+                player.addtotalwin(player.betMoney * 1.5)
             # プレイヤーのトータルとディーラーのトータルが同じ場合
             elif player.total == self.dealer.total:
                 # プレイヤーがナチュラルブラックジャックかつディーラーがナチュラルブラックジャック
@@ -64,9 +72,9 @@ class GameManager:
                     if player.tag == "clone":
                         for i, x in enumerate(self.players):
                             if x.name == player.name:
-                                self.players[i].addtotalwin(player.betMoney)
+                                self.players[i].addtotalwin(player.betMoney * 1.5)
                                 break
-                    player.addtotalwin(player.betMoney)
+                    player.addtotalwin(player.betMoney * 1.5)
                 # プレイヤーがノーマルブラックジャックかつディーラーがナチュラルブラックジャック
                 elif player.normalbj and self.dealer.naturalbj:
                     if player.tag == "clone":

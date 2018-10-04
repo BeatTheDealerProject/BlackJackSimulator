@@ -4,7 +4,7 @@
 name:プレイヤー名, cards:プレイヤー個人の手札, total:プレイヤー個人の手札の合計値,
 acetotal:プレイヤーのace所持数でバーストした際などの使用する,burst:Trueでプレイヤーがバーストしていることを示す
 """
-
+import GamePlayer
 
 from BlackJack.GamePlayer import *
 
@@ -12,12 +12,17 @@ from BlackJack.GamePlayer import *
 class Player(GamePlayer):
     # プレイヤーの初期化
     def __init__(self, name, money=1000000, betMoney=0, tag="player"):
+        # プレイヤー名
         self.name = name
+        # 所持金
         self.money = money
+        # ベット額(クローンに値を渡す際に使用する)
         self.betMoney = betMoney
+        # 累計勝利回数、敗北回数、引き分け回数
         self.totalwin = 0
         self.totallose = 0
         self.totaldraw = 0
+        # プレイヤーとクローンを見分ける
         self.tag = tag
         self.debagtxt = ""
         super().__init__()
@@ -44,6 +49,11 @@ class Player(GamePlayer):
         self.hit(dealer)
         self.stand()
         self.debagtxt += ")"
+
+    # サレンダーの処理
+    def surrender(self):
+        self.debagtxt += "R"
+        self.money -= self.betMoney/2
 
     # プレイヤー側のベットの処理
     def bet(self, betMoney):

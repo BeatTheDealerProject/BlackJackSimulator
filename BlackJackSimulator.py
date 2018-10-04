@@ -3,6 +3,9 @@
 ゲーム全体の流れをここに記述する
 プレイヤーの追加はここで手動で行ってください
 """
+import Player
+import Dealer
+import GameManager
 
 from BlackJack.Player import *
 from BlackJack.Dealer import *
@@ -48,7 +51,7 @@ def main(strategy):
                       ["P", "P", "P", "P", "P", "P", "P", "P", "P", "P"],  # 8,8
                       ["P", "P", "P", "P", "P", "S", "P", "P", "S", "S"],  # 9,9
                       ["S", "S", "S", "S", "S", "S", "S", "S", "S", "S"],  # 10,10
-                      ["P", "P", "P", "P", "P", "P", "P", "P", "P", "P"],  # A,A
+                      ["P", "P", "P", "P", "P", "P", "P", "P", "P", "P"]  # A,A
                       ]
 
     # メインループ
@@ -65,22 +68,24 @@ def main(strategy):
         for player in players:
             player.bet(minbet)
 
-        # ディーラーが各プレイヤー（自身含む）に初期カードを配る
+        # 参加プレイヤーの初期化を実行後、ディーラーが各プレイヤー（自身含む）に初期カードを配る
         dealer.firstdeal(players)
 
         # 各プレイヤーの点数を更新
         for player in players:
             player.totalvalue()
 
-        # スプリットするかどうかを先に確認する
+        # サレンダーの回数を記録する
+        surrenderCounter = 0
+
+        # スプリットするかどうかを確認する
         for i, player in enumerate(players):
             if player.cards[0].rank == player.cards[1].rank:
                 usermessage = split_strategy[player.cards[0].value - 2][dealer.cards[0].value - 2]
                 if usermessage == 'P' or usermessage == 'p':
-
                     # プレイヤーのクローンを作成し、ゲームに参加するプレイヤーとして追加登録する
-                    playerClone = Player(player.name, betMoney=player.betMoney,tag="clone")
-                    players.insert(i+1, playerClone)
+                    playerClone = Player(player.name, betMoney=player.betMoney, tag="clone")
+                    players.insert(i + 1, playerClone)
 
                     # クローンにプレイヤーが所持しているカードを一枚渡す
                     playerClone.dealedcard(player.cards[1])
@@ -106,11 +111,10 @@ def main(strategy):
                     usermessage = strategy[player.total - 4][dealer.cards[0].value - 2]
 
                 # プレイヤーの選択による行動の分岐を記述
-
                 # プレイヤーがヒットを選択した場合
                 if usermessage == 'H' or usermessage == 'h':
                     player.hit(dealer)
-                    if (player.burst == True):
+                    if player.burst:
                         break
 
                 # プレイヤーがスタンドを選択した場合
@@ -120,21 +124,41 @@ def main(strategy):
 
                 # プレイヤーがダブルダウンを選択した場合
                 elif usermessage == 'D' or usermessage == 'd':
-                    player.doubledown(dealer)
-                    break
+                    # ヒット後にはダブルダウンの選択不可
+                    if len(player.cards) == 2:
+                        player.doubledown(dealer)
+                        break
+                    else:
+                        player.hit(dealer)
+                        if player.burst:
+                            break
 
-        # ディーラーは17を超えるまでヒットを続ける
-        dealer.continuehit()
+                # プレイヤーがサレンダーを選択した場合
+                elif usermessage == "R" or usermessage == "r":
+                    # ヒット後にはサレンダーの選択不可
+                    if len(player.cards) == 2:
+                        player.surrender()
+                        surrenderCounter += 1
+                        break
+                    else:
+                        player.hit(dealer)
+                        if player.burst:
+                            break
 
-        # GameManagerの初期化
-        gamemanager: GameManager = GameManager(players, dealer)
+        # サレンダーカウンターがプレイヤーの人数と同じ場合全員がサレンダーしていると判断する
+        if surrenderCounter < len(players):
+            # ディーラーは17を超えるまでヒットを続ける
+            dealer.continuehit()
 
-        # 勝敗を判定する
-        gamemanager.judge()
+            # GameManagerの初期化
+            gamemanager: GameManager = GameManager(players, dealer)
+
+            # 勝敗を判定する
+            gamemanager.judge()
 
         # デバッグ
         for player in players:
-            debagText += "\n" + str(remainingGameNum) +  "\n" + player.name +"-" + player.tag + "\n"
+            debagText += "\n" + str(remainingGameNum) + "\n" + player.name + "-" + player.tag + "\n"
             debagText += str(player.betMoney) + "\n"
             debagText += player.debagtxt + "\n"
             player.debagtxt = ""
@@ -145,7 +169,7 @@ def main(strategy):
         for card in dealer.cards:
             debagText += str(card.value) + "-"
         debagText += "dealer total = " + str(dealer.total)
-        debagText += "\ntotal:" + str(players[0].money)
+        if len(players) > 0: debagText += "\ntotal:" + str(players[0].money)
         debagText += "\n\n-----------------------\n\n"
 
         # クローンを削除する
@@ -156,7 +180,7 @@ def main(strategy):
                     del player
                     del players[i]
                     cloneflg = True
-            if cloneflg==False:
+            if not cloneflg:
                 break
 
         # ループの処理
@@ -184,35 +208,37 @@ def showdeck():
 
 
 if __name__ == "__main__":
+    # """
     main([['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 4
           ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 5
           ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 6
           ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 7
           ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 8
-          ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 9
-          ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 10
-          ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 11
+          ['h', 'd', 'd', 'd', 'd', 'h', 'h', 'h', 'h', 'h'],  # 9
+          ['d', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'h', 'h'],  # 10
+          ['d', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'h'],  # 11
           ['h', 'h', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],  # 12
           ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],  # 13
           ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],  # 14
-          ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],  # 15
-          ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'h', 'h'],  # 16
+          ['s', 's', 's', 's', 's', 'h', 'h', 'h', 'r', 'h'],  # 15
+          ['s', 's', 's', 's', 's', 'h', 'h', 'r', 'r', 'r'],  # 16
           ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],  # 17
           ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],  # 18
           ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],  # 19
           ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],  # 20
           ['s', 's', 's', 's', 's', 's', 's', 's', 's', 's'],  # 21
           # ここからはAがある場合のストラテジー表
-          ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],  # AA
-          ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # A2
-          ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],  # A3
-          ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],  # A4
-          ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],  # A5
-          ['H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'],  # A6
-          ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'H', 'H', 'S'],  # A7
+          ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # AA
+          ['h', 'h', 'h', 'd', 'd', 'h', 'h', 'h', 'h', 'h'],  # A2
+          ['H', 'H', 'H', 'd', 'd', 'H', 'H', 'H', 'H', 'H'],  # A3
+          ['H', 'H', 'd', 'd', 'd', 'H', 'H', 'H', 'H', 'H'],  # A4
+          ['H', 'H', 'd', 'd', 'd', 'H', 'H', 'H', 'H', 'H'],  # A5
+          ['H', 'd', 'd', 'd', 'd', 'H', 'H', 'H', 'H', 'H'],  # A6
+          ['S', 'd', 'd', 'd', 'd', 'S', 'S', 'H', 'H', 'S'],  # A7
           ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],  # A8
           ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],  # A9
           ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S']  # A10
           ])
+    # """
     # デッキ確認用のデバッグ関数
     # showdeck()
