@@ -4,9 +4,6 @@
 カードを配る処理はこのクラスに記述していく
 """
 
-import GamePlayer
-import Deck
-
 from BlackJack.GamePlayer import *
 from BlackJack.Deck import *
 

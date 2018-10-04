@@ -3,9 +3,6 @@
 ゲーム全体の流れをここに記述する
 プレイヤーの追加はここで手動で行ってください
 """
-import Player
-import Dealer
-import GameManager
 
 from BlackJack.Player import *
 from BlackJack.Dealer import *
