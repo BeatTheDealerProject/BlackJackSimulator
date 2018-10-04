@@ -4,7 +4,6 @@
 name:プレイヤー名, cards:プレイヤー個人の手札, total:プレイヤー個人の手札の合計値,
 acetotal:プレイヤーのace所持数でバーストした際などの使用する,burst:Trueでプレイヤーがバーストしていることを示す
 """
-import GamePlayer
 
 from BlackJack.GamePlayer import *
 
