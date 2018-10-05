@@ -28,32 +28,43 @@ class GameManager:
 
             # プレイヤーがバーストせずにディーラーがバーストした場合
             elif player.burst == False and self.dealer.burst == True:
+                # スプリットしているかどうかのフラグ
+                spflg = False
+                for x in self.players:
+                    if x.tag == "clone":
+                        spflg = True
+
                 if player.tag == "clone":
                     for i, x in enumerate(self.players):
                         if x.name == player.name:
-                            if player.naturalbj:
+                            if player.naturalbj and not spflg:
                                 self.players[i].addtotalwin(player.betMoney*1.5)
                                 break
                             else:
                                 self.players[i].addtotalwin(player.betMoney)
                                 break
-                if player.naturalbj:
+                if player.naturalbj and not spflg:
                     player.addtotalwin(player.betMoney*1.5)
                 else:
                     player.addtotalwin(player.betMoney)
 
             # プレイヤーのトータルがディーラーのトータルよりも多い場合
             elif player.total > self.dealer.total:
+                spflg = False
+                for x in self.players:
+                    if player.tag=="clone":
+                        spflg = True
+
                 if player.tag == "clone":
                     for i, x in enumerate(self.players):
                         if x.name == player.name:
-                            if player.naturalbj:
+                            if player.naturalbj and not spflg:
                                 self.players[i].addtotalwin(player.betMoney*1.5)
                                 break
                             else:
                                 self.players[i].addtotalwin(player.betMoney)
                                 break
-                if player.naturalbj:
+                if player.naturalbj and not spflg:
                     player.addtotalwin(player.betMoney*1.5)
                 else:
                     player.addtotalwin(player.betMoney)

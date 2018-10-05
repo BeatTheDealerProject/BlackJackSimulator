@@ -21,6 +21,8 @@ class Player(GamePlayer):
         self.totalwin = 0
         self.totallose = 0
         self.totaldraw = 0
+        self.totalsplit = 0
+        self.totalsurrender = 0
         # プレイヤーとクローンを見分ける
         self.tag = tag
         self.debagtxt = ""
@@ -52,6 +54,7 @@ class Player(GamePlayer):
     # サレンダーの処理
     def surrender(self):
         self.debagtxt += "R"
+        self.totalsurrender += 1
         self.money -= self.betMoney/2
 
     # プレイヤー側のベットの処理
