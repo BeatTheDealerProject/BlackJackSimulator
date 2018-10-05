@@ -80,6 +80,8 @@ def main(strategy):
             if player.cards[0].rank == player.cards[1].rank:
                 usermessage = split_strategy[player.cards[0].value - 2][dealer.cards[0].value - 2]
                 if usermessage == 'P' or usermessage == 'p':
+                    player.totalsplit += 1
+
                     # プレイヤーのクローンを作成し、ゲームに参加するプレイヤーとして追加登録する
                     playerClone = Player(player.name, betMoney=player.betMoney, tag="clone")
                     players.insert(i + 1, playerClone)
@@ -186,7 +188,7 @@ def main(strategy):
             for player in players:
                 file = open('result.txt', 'w')
                 text += "win : " + str(player.totalwin) + "\nlose : " + str(player.totallose) + \
-                        "\ndraw : " + str(player.totaldraw)
+                        "\ndraw : " + str(player.totaldraw) + "\nsplit : " + str(player.totalsplit) + "\nsurrender :" + str(player.totalsurrender)
                 file.writelines(text)
 
                 debagfile = open('debag.txt', 'w')
