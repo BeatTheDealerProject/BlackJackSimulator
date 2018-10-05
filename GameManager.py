@@ -25,22 +25,39 @@ class GameManager:
                             self.players[i].addtotallose(player.betMoney)
                             break
                 player.addtotallose(player.betMoney)
+
             # プレイヤーがバーストせずにディーラーがバーストした場合
             elif player.burst == False and self.dealer.burst == True:
                 if player.tag == "clone":
                     for i, x in enumerate(self.players):
                         if x.name == player.name:
-                            self.players[i].addtotalwin(player.betMoney)
-                            break
-                player.addtotalwin(player.betMoney)
+                            if player.naturalbj:
+                                self.players[i].addtotalwin(player.betMoney*1.5)
+                                break
+                            else:
+                                self.players[i].addtotalwin(player.betMoney)
+                                break
+                if player.naturalbj:
+                    player.addtotalwin(player.betMoney*1.5)
+                else:
+                    player.addtotalwin(player.betMoney)
+
             # プレイヤーのトータルがディーラーのトータルよりも多い場合
             elif player.total > self.dealer.total:
                 if player.tag == "clone":
                     for i, x in enumerate(self.players):
                         if x.name == player.name:
-                            self.players[i].addtotalwin(player.betMoney)
-                            break
-                player.addtotalwin(player.betMoney)
+                            if player.naturalbj:
+                                self.players[i].addtotalwin(player.betMoney*1.5)
+                                break
+                            else:
+                                self.players[i].addtotalwin(player.betMoney)
+                                break
+                if player.naturalbj:
+                    player.addtotalwin(player.betMoney*1.5)
+                else:
+                    player.addtotalwin(player.betMoney)
+
             # プレイヤーのトータルがディーラーのトータルよりも少ない場合
             elif player.total < self.dealer.total:
                 if player.tag == "clone":
@@ -49,14 +66,7 @@ class GameManager:
                             self.players[i].addtotallose(player.betMoney)
                             break
                 player.addtotallose(player.betMoney)
-            # プレイヤーがナチュラルブラックジャックを達成して勝利した場合
-            elif player.naturalbj and player.total > self.dealer.total:
-                if player.tag=="clone":
-                    for i, x in enumerate(self.players):
-                        if x.name == player.name:
-                            self.players[i].addtotalwin(player.betMoney * 1.5)
-                            break
-                player.addtotalwin(player.betMoney * 1.5)
+
             # プレイヤーのトータルとディーラーのトータルが同じ場合
             elif player.total == self.dealer.total:
                 # プレイヤーがナチュラルブラックジャックかつディーラーがナチュラルブラックジャック
