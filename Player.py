@@ -23,6 +23,7 @@ class Player(GamePlayer):
         self.totaldraw = 0
         self.totalsplit = 0
         self.totalsurrender = 0
+        self.totalplayerhandlist = [0] * 12
         # プレイヤーとクローンを見分ける
         self.tag = tag
         self.debagtxt = ""
@@ -55,11 +56,19 @@ class Player(GamePlayer):
     def surrender(self):
         self.debagtxt += "R"
         self.totalsurrender += 1
+        self.surrendeflg = True
         self.money -= self.betMoney/2
 
     # プレイヤー側のベットの処理
     def bet(self, betMoney):
         self.betMoney = betMoney
+
+    # プレイヤーのインシュランスの処理
+    def insurance(self, dealer):
+        if dealer.cards[0] + dealer.cards[1] == 21:
+            self.money += self.betMoney
+        else:
+            self.money -= self.betMoney/2
 
     # 自身の手札を表示するUI
     def showhands(self):
