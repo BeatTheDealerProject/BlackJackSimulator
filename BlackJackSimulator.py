@@ -31,13 +31,16 @@ def main(strategy):
     debagText = ""
 
     # ゲーム全体のループ回数
-    totalGameNum = remainingGameNum = 1000
+    totalGameNum = remainingGameNum = 100000
 
     # 最小ベットの宣言
     minbet = 100
 
     # 最大ベットの宣言
     maxbet = 10000
+
+    # 初回起動時のみファイルを上書きで開く
+    opened_file = False
 
     split_strategy = [["P", "P", "P", "P", "P", "P", "H", "H", "H", "H"],  # 2,2
                       ["P", "P", "P", "P", "P", "P", "H", "H", "H", "H"],  # 3,3
@@ -80,8 +83,6 @@ def main(strategy):
             if player.cards[0].rank == player.cards[1].rank:
                 usermessage = split_strategy[player.cards[0].value - 2][dealer.cards[0].value - 2]
                 if usermessage == 'P' or usermessage == 'p':
-                    player.totalsplit += 1
-
                     # プレイヤーのクローンを作成し、ゲームに参加するプレイヤーとして追加登録する
                     playerClone = Player(player.name, betMoney=player.betMoney, tag="clone")
                     players.insert(i + 1, playerClone)
@@ -97,6 +98,10 @@ def main(strategy):
                     # プレイヤーとクローンにカードを配り直す
                     player.dealedcard(dealer.dealcard())
                     playerClone.dealedcard(dealer.dealcard())
+
+        for player in players:
+            if player.tag == "clone":
+                players[0].totalsplit += 1
 
         # 各プレイヤーに対して選択肢を提示する
         for player in players:
@@ -137,6 +142,8 @@ def main(strategy):
                     # ヒット後にはサレンダーの選択不可
                     if len(player.cards) == 2:
                         player.surrender()
+                        if player.tag == "clone":
+                           players[0].totalsurrender += 1
                         surrenderCounter += 1
                         break
                     else:
@@ -144,16 +151,23 @@ def main(strategy):
                         if player.burst:
                             break
 
-        # サレンダーカウンターがプレイヤーの人数と同じ場合全員がサレンダーしていると判断する
-        if surrenderCounter < len(players):
-            # ディーラーは17を超えるまでヒットを続ける
-            dealer.continuehit()
+        # ディーラーは17を超えるまでヒットを続ける
+        dealer.continuehit()
 
-            # GameManagerの初期化
-            gamemanager: GameManager = GameManager(players, dealer)
+        # GameManagerの初期化
+        gamemanager: GameManager = GameManager(players, dealer)
 
-            # 勝敗を判定する
-            gamemanager.judge()
+        # 勝敗を判定する
+        gamemanager.judge()
+
+        # プレイヤーハンドの合計値の回数を記録する
+        for player in players:
+            if player.total > 21:
+                player.totalplayerhandlist[len(player.totalplayerhandlist) - 1] += 1
+            elif player.total < 10:
+                pass
+            else:
+                player.totalplayerhandlist[player.total - 10] += 1
 
         # デバッグ
         for player in players:
@@ -184,15 +198,33 @@ def main(strategy):
 
         # ループの処理
         remainingGameNum -= 1
+
+        # ファイル入出力
+        if remainingGameNum % 10000 == 0:
+            if opened_file:
+                debagfile = open('debag.txt', 'a')
+                debagfile.writelines(debagText)
+                debagText = ""
+            else:
+                opened_file = True
+                debagfile = open('debag.txt', 'w')
+                debagfile.writelines(debagText)
+                debagText = ""
+
         if remainingGameNum == 0:
             for player in players:
                 file = open('result.txt', 'w')
-                text += "win : " + str(player.totalwin) + "\nlose : " + str(player.totallose) + \
-                        "\ndraw : " + str(player.totaldraw) + "\nsplit : " + str(player.totalsplit) + "\nsurrender :" + str(player.totalsurrender)
+                text += "win : {0}\nlose : {1}\ndraw : {2}\nsplit : {3}\nsurrender :{4}\nmoney : {5}\ntotal{6}".format(
+                    str(player.totalwin), str(player.totallose), str(player.totaldraw), str(player.totalsplit),
+                    str(player.totalsurrender), str(player.money), str(
+                        player.totalwin + player.totallose + player.totaldraw + player.totalsurrender - player.totalsplit))
+                text += "\n\n--- total player hand --- "
+                for i, x in enumerate(player.totalplayerhandlist):
+                    if i == len(player.totalplayerhandlist) - 1:
+                        text += "\nburst : " + str(x)
+                    else:
+                        text += "\n" + str(i+10) + " : " + str(x)
                 file.writelines(text)
-
-                debagfile = open('debag.txt', 'w')
-                debagfile.writelines(debagText)
                 break
             break
 

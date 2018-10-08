@@ -15,6 +15,7 @@ class GamePlayer:
         self.burst = False
         self.naturalbj = False
         self.normalbj = False
+        self.surrendeflg = False
 
     # 　子オブジェクトから呼び出せる初期化関数
     def initialize(self):
@@ -25,6 +26,7 @@ class GamePlayer:
         self.burst = False
         self.naturalbj = False
         self.normalbj = False
+        self.surrendeflg = False
 
     # ゲームプレイヤーの手札の合計値を返す関数
     def totalvalue(self):
