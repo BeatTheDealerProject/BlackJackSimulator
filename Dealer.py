@@ -12,6 +12,7 @@ class Dealer(GamePlayer):
     # ディーラーの初期化
     def __init__(self, deckNum):
         self.deck = Deck(deckNum)
+        self.totaldealerhandlist = [0] * 6
         # ディーラーがシャッフルする回数。今回は10000回シャッフルする。
         self.shufflenum = 10000
         self.deck.shuffle(deckNum * self.shufflenum)
