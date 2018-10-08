@@ -169,6 +169,11 @@ def main(strategy):
             else:
                 player.totalplayerhandlist[player.total - 10] += 1
 
+        if dealer.total > 21:
+            dealer.totaldealerhandlist[len(dealer.totaldealerhandlist) - 1] += 1
+        else:
+            dealer.totaldealerhandlist[dealer.total - 17] += 1
+
         # デバッグ
         for player in players:
             debagText += "\n" + str(remainingGameNum) + "\n" + player.name + "-" + player.tag + "\n"
@@ -224,6 +229,12 @@ def main(strategy):
                         text += "\nburst : " + str(x)
                     else:
                         text += "\n" + str(i+10) + " : " + str(x)
+                text += "\n\n--- total dealer hand --- "
+                for i, x in enumerate(dealer.totaldealerhandlist):
+                    if i == len(dealer.totaldealerhandlist) - 1:
+                        text += "\nburst : " + str(x)
+                    else:
+                        text += "\n"+ str(i+17) + " : " + str(x)
                 file.writelines(text)
                 break
             break
