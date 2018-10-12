@@ -4,23 +4,22 @@
 プレイヤーの追加はここで手動で行ってください
 """
 
-from BlackJack.Player import *
-from BlackJack.Dealer import *
-from BlackJack.GameManager import *
+import argparse
+import json
+from Player import Player
+from Dealer import Dealer
+from GameManager import GameManager
 
-
-def main(strategy):
+def main(strategy, config):
     # プレイヤーを作成
     p1 = Player("player1")
-    #    p2 = Player("player2")
-    #    players = [p1, p2]
 
     # ゲームに参加するプレイヤーを表現
     players = [p1]
 
     # ディーラーの作成
     # 引数はゲームに使用するデッキの数を表現
-    dealer = Dealer(6)
+    dealer = Dealer(config['decknum'])
 
     # カットカードを表現
     # 今回はデッキの1/2の位置にカットカードを固定している
@@ -28,16 +27,16 @@ def main(strategy):
 
     # txtデータとして出力するものをstring形式で初期化
     text = ""
-    debagText = ""
+    debugtext = ""
 
     # ゲーム全体のループ回数
-    totalGameNum = remainingGameNum = 100000
+    totalGameNum = remainingGameNum = config['gamenum']
 
     # 最小ベットの宣言
-    minbet = 100
+    minbet = config['minbet']
 
     # 最大ベットの宣言
-    maxbet = 10000
+    maxbet = config['maxbet']
 
     # 初回起動時のみファイルを上書きで開く
     opened_file = False
@@ -55,11 +54,7 @@ def main(strategy):
                       ]
 
     # メインループ
-    while True:
-
-        if remainingGameNum % 100 == 0:
-            print(remainingGameNum)
-
+    for gamecount in range(totalGameNum):
         # ゲームを始める前にデッキの中からカットカードが出てきているかを確認し、出てきていれば、デッキをシャッフルする
         if dealer.deck.current > cutcard:
             dealer.deck.shuffle(dealer.shufflenum)
@@ -155,7 +150,7 @@ def main(strategy):
         dealer.continuehit()
 
         # GameManagerの初期化
-        gamemanager: GameManager = GameManager(players, dealer)
+        gamemanager = GameManager(players, dealer)
 
         # 勝敗を判定する
         gamemanager.judge()
@@ -174,21 +169,6 @@ def main(strategy):
         else:
             dealer.totaldealerhandlist[dealer.total - 17] += 1
 
-        # デバッグ
-        for player in players:
-            debagText += "\n" + str(remainingGameNum) + "\n" + player.name + "-" + player.tag + "\n"
-            debagText += str(player.betMoney) + "\n"
-            debagText += player.debagtxt + "\n"
-            player.debagtxt = ""
-            for card in player.cards:
-                debagText += str(card.value) + "-"
-            debagText += "player total = " + str(player.total) + "\n"
-        debagText += "\ndealer\n"
-        for card in dealer.cards:
-            debagText += str(card.value) + "-"
-        debagText += "dealer total = " + str(dealer.total)
-        if len(players) > 0: debagText += "\ntotal:" + str(players[0].money)
-        debagText += "\n\n-----------------------\n\n"
 
         # クローンを削除する
         while True:
@@ -201,44 +181,68 @@ def main(strategy):
             if not cloneflg:
                 break
 
-        # ループの処理
-        remainingGameNum -= 1
-
         # ファイル入出力
-        if remainingGameNum % 10000 == 0:
-            if opened_file:
-                debagfile = open('debag.txt', 'a')
-                debagfile.writelines(debagText)
-                debagText = ""
-            else:
-                opened_file = True
-                debagfile = open('debag.txt', 'w')
-                debagfile.writelines(debagText)
-                debagText = ""
+        if gamecount % 10000 == 0:
+            debugtext = Debug(dealer, players, gamecount, debugtext)
+            if config['exportdebug']:
+                if opened_file:
+                    debugfile = open('debug.txt', 'a')
+                    debugfile.writelines(debugtext)
+                    debugtext = ""
+                else:
+                    opened_file = True
+                    debugfile = open('debug.txt', 'w')
+                    debugfile.writelines(debugtext)
+                    debugtext = ""
 
-        if remainingGameNum == 0:
-            for player in players:
-                file = open('result.txt', 'w')
-                text += "win : {0}\nlose : {1}\ndraw : {2}\nsplit : {3}\nsurrender :{4}\nmoney : {5}\ntotal{6}".format(
-                    str(player.totalwin), str(player.totallose), str(player.totaldraw), str(player.totalsplit),
-                    str(player.totalsurrender), str(player.money), str(
-                        player.totalwin + player.totallose + player.totaldraw + player.totalsurrender - player.totalsplit))
-                text += "\n\n--- total player hand --- "
-                for i, x in enumerate(player.totalplayerhandlist):
-                    if i == len(player.totalplayerhandlist) - 1:
-                        text += "\nburst : " + str(x)
-                    else:
-                        text += "\n" + str(i+10) + " : " + str(x)
-                text += "\n\n--- total dealer hand --- "
-                for i, x in enumerate(dealer.totaldealerhandlist):
-                    if i == len(dealer.totaldealerhandlist) - 1:
-                        text += "\nburst : " + str(x)
-                    else:
-                        text += "\n"+ str(i+17) + " : " + str(x)
-                file.writelines(text)
-                break
+
+    result = []
+    for player in players:
+        result.append(player.GetPlayerResultData())
+        
+    if config['exportresult']:
+        for player in players:
+            file = open('result.txt', 'w')
+            text += "win : {0}\nlose : {1}\ndraw : {2}\nsplit : {3}\nsurrender :{4}\nmoney : {5}\ntotal{6}".format(
+                str(player.totalwin), str(player.totallose), str(player.totaldraw), str(player.totalsplit),
+                str(player.totalsurrender), str(player.money), str(
+                    player.totalwin + player.totallose + player.totaldraw + player.totalsurrender - player.totalsplit))
+            text += "\n\n--- total player hand --- "
+            for i, x in enumerate(player.totalplayerhandlist):
+                if i == len(player.totalplayerhandlist) - 1:
+                    text += "\nburst : " + str(x)
+                else:
+                    text += "\n" + str(i+10) + " : " + str(x)
+            text += "\n\n--- total dealer hand --- "
+            for i, x in enumerate(dealer.totaldealerhandlist):
+                if i == len(dealer.totaldealerhandlist) - 1:
+                    text += "\nburst : " + str(x)
+                else:
+                    text += "\n"+ str(i+17) + " : " + str(x)
+            file.writelines(text)
             break
+    return result
 
+def Debug(dealer, players, gamenum, debugtext):
+    # デバッグ
+    for player in players:
+        debugtext += "\n" + str(gamenum) + "\n" + player.name + "-" + player.tag + "\n"
+        debugtext += str(player.betMoney) + "\n"
+        debugtext += player.debugtxt + "\n"
+        player.debugtxt = ""
+        for card in player.cards:
+            debugtext += str(card.value) + "-"
+        debugtext += "player total = " + str(player.total) + "\n"
+    debugtext += "\ndealer\n"
+    for card in dealer.cards:
+        debugtext += str(card.value) + "-"
+    debugtext += "dealer total = " + str(dealer.total)
+    if len(players) > 0:
+        debugtext += "\ntotal:" + str(players[0].money)
+    debugtext += "\n\n-----------------------\n\n"
+
+    return debugtext
+    
 
 # デッキ確認用関数
 def showdeck():
@@ -250,6 +254,26 @@ def showdeck():
 
 
 if __name__ == "__main__":
+    #コマンドライン引数についての設定
+    parser = argparse.ArgumentParser(
+                prog="blackjack",
+                usage="python blackjack [simulator config file]",
+                description="",
+                epilog="",
+                add_help=True
+              )
+    #GAに関する設定ファイルを指定する引数
+    parser.add_argument(
+        "simulatorconfigfile",
+        help="The json file what configures ga simulation."
+    )
+
+    args = parser.parse_args()
+
+    configfile = args.simulatorconfigfile
+    with open(configfile, "r") as f:
+        config = json.load(f)
+
     # """
     main([['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 4
           ['h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h', 'h'],  # 5
@@ -280,7 +304,7 @@ if __name__ == "__main__":
           ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],  # A8
           ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],  # A9
           ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S']  # A10
-          ])
+          ], config)
     # """
     # デッキ確認用のデバッグ関数
     # showdeck()

@@ -6,7 +6,7 @@ Cardクラスからデッキを作成するクラス
 
 import random
 
-from BlackJack.Card import *
+from Card import Card
 
 
 class Deck:

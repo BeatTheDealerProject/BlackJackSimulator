@@ -5,7 +5,7 @@ name:プレイヤー名, cards:プレイヤー個人の手札, total:プレイ�
 acetotal:プレイヤーのace所持数でバーストした際などの使用する,burst:Trueでプレイヤーがバーストしていることを示す
 """
 
-from BlackJack.GamePlayer import *
+from GamePlayer import GamePlayer
 
 
 class Player(GamePlayer):
@@ -26,8 +26,18 @@ class Player(GamePlayer):
         self.totalplayerhandlist = [0] * 12
         # プレイヤーとクローンを見分ける
         self.tag = tag
-        self.debagtxt = ""
+        self.debugtxt = ""
         super().__init__()
+    
+    def GetPlayerResultData(self):
+        result = dict()
+        result['totalwin'] = self.totalwin
+        result['totallose'] = self.totallose
+        result['totaldraw'] = self.totaldraw
+        result['totalsplit'] = self.totalsplit
+        result['totalsurrender'] = self.totalsurrender
+        result['totalplayerhandlist'] = self.totalplayerhandlist
+        return result
 
     # プレイヤーにカードを配るときに使用する関数
     def dealedcard(self, card):
@@ -37,24 +47,24 @@ class Player(GamePlayer):
     # プレイヤー側のヒットの処理
     def hit(self, dealer):
         self.dealedcard(dealer.dealcard())
-        self.debagtxt += "H"
+        self.debugtxt += "H"
 
     # プレイヤー側のスタンドの処理
     def stand(self):
-        self.debagtxt += "S"
+        self.debugtxt += "S"
         pass
 
     # プレイヤ－側のダブルダウンの処理
     def doubledown(self, dealer):
-        self.debagtxt += "D("
+        self.debugtxt += "D("
         self.betMoney *= 2
         self.hit(dealer)
         self.stand()
-        self.debagtxt += ")"
+        self.debugtxt += ")"
 
     # サレンダーの処理
     def surrender(self):
-        self.debagtxt += "R"
+        self.debugtxt += "R"
         self.totalsurrender += 1
         self.surrendeflg = True
         self.money -= self.betMoney/2
