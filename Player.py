@@ -28,6 +28,16 @@ class Player(GamePlayer):
         self.tag = tag
         self.debugtxt = ""
         super().__init__()
+    
+    def GetPlayerResultData(self):
+        result = dict()
+        result['totalwin'] = self.totalwin
+        result['totallose'] = self.totallose
+        result['totaldraw'] = self.totaldraw
+        result['totalsplit'] = self.totalsplit
+        result['totalsurrender'] = self.totalsurrender
+        result['totalplayerhandlist'] = self.totalplayerhandlist
+        return result
 
     # プレイヤーにカードを配るときに使用する関数
     def dealedcard(self, card):
