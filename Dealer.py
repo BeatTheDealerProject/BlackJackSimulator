@@ -4,8 +4,8 @@
 カードを配る処理はこのクラスに記述していく
 """
 
-from BlackJack.GamePlayer import *
-from BlackJack.Deck import *
+from GamePlayer import GamePlayer
+from Deck import Deck
 
 
 class Dealer(GamePlayer):

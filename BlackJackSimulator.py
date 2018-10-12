@@ -4,9 +4,9 @@
 プレイヤーの追加はここで手動で行ってください
 """
 
-from BlackJack.Player import *
-from BlackJack.Dealer import *
-from BlackJack.GameManager import *
+from Player import Player
+from Dealer import Dealer
+from GameManager import GameManager
 
 
 def main(strategy):
@@ -28,7 +28,7 @@ def main(strategy):
 
     # txtデータとして出力するものをstring形式で初期化
     text = ""
-    debagText = ""
+    debugText = ""
 
     # ゲーム全体のループ回数
     totalGameNum = remainingGameNum = 100000
@@ -55,7 +55,7 @@ def main(strategy):
                       ]
 
     # メインループ
-    while True:
+    for gameloop in range(totalGameNum):
 
         if remainingGameNum % 100 == 0:
             print(remainingGameNum)
@@ -176,19 +176,19 @@ def main(strategy):
 
         # デバッグ
         for player in players:
-            debagText += "\n" + str(remainingGameNum) + "\n" + player.name + "-" + player.tag + "\n"
-            debagText += str(player.betMoney) + "\n"
-            debagText += player.debagtxt + "\n"
-            player.debagtxt = ""
+            debugText += "\n" + str(remainingGameNum) + "\n" + player.name + "-" + player.tag + "\n"
+            debugText += str(player.betMoney) + "\n"
+            debugText += player.debugtxt + "\n"
+            player.debugtxt = ""
             for card in player.cards:
-                debagText += str(card.value) + "-"
-            debagText += "player total = " + str(player.total) + "\n"
-        debagText += "\ndealer\n"
+                debugText += str(card.value) + "-"
+            debugText += "player total = " + str(player.total) + "\n"
+        debugText += "\ndealer\n"
         for card in dealer.cards:
-            debagText += str(card.value) + "-"
-        debagText += "dealer total = " + str(dealer.total)
-        if len(players) > 0: debagText += "\ntotal:" + str(players[0].money)
-        debagText += "\n\n-----------------------\n\n"
+            debugText += str(card.value) + "-"
+        debugText += "dealer total = " + str(dealer.total)
+        if len(players) > 0: debugText += "\ntotal:" + str(players[0].money)
+        debugText += "\n\n-----------------------\n\n"
 
         # クローンを削除する
         while True:
@@ -207,14 +207,14 @@ def main(strategy):
         # ファイル入出力
         if remainingGameNum % 10000 == 0:
             if opened_file:
-                debagfile = open('debag.txt', 'a')
-                debagfile.writelines(debagText)
-                debagText = ""
+                debugfile = open('debug.txt', 'a')
+                debugfile.writelines(debugText)
+                debugText = ""
             else:
                 opened_file = True
-                debagfile = open('debag.txt', 'w')
-                debagfile.writelines(debagText)
-                debagText = ""
+                debugfile = open('debug.txt', 'w')
+                debugfile.writelines(debugText)
+                debugText = ""
 
         if remainingGameNum == 0:
             for player in players:
