@@ -2,7 +2,7 @@
   "decknum": 6,
   "minbet": 100,
   "maxbet": 1000,
-  "gamenum": 10000,
+  "gamenum": 1000,
   "exportresult": true,
   "exportdebug":true
 }
