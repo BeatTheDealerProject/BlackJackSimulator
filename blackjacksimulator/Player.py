@@ -5,12 +5,12 @@ name:プレイヤー名, cards:プレイヤー個人の手札, total:プレイ�
 acetotal:プレイヤーのace所持数でバーストした際などの使用する,burst:Trueでプレイヤーがバーストしていることを示す
 """
 
-from GamePlayer import GamePlayer
+from .GamePlayer import GamePlayer
 
 
 class Player(GamePlayer):
     # プレイヤーの初期化
-    def __init__(self, name, money=1000000, betMoney=0, tag="player"):
+    def __init__(self, name="Nobody", money=1000000, betMoney=0, tag="player"):
         # プレイヤー名
         self.name = name
         # 所持金
